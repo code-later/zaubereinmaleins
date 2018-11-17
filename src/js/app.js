@@ -38,6 +38,9 @@ class MagicCube extends HTMLElement {
     case "ausschnitte" :
       this.segments();
       break;
+    case "wo-kommst-du-an" :
+      this.pathFinder();
+      break;
     default:
       console.log("No game mode selected yet.");
     }
@@ -87,60 +90,6 @@ class MagicCube extends HTMLElement {
     });
   }
 
-  nextField(field, visitedFields) {
-    const ops = {
-      left: (x) => { return x - 1 },
-      upperLeft: (x) => { return x - 11 },
-      up: (x) => { return x - 10 },
-      upperRight: (x) => { return x - 9 },
-      right: (x) => { return x + 1 },
-      lowerRight: (x) => { return x + 11 },
-      low: (x) => { return x + 10 },
-      lowerleft: (x) => { return x + 9 }
-    };
-
-    let directions = new Map();
-
-    directions.set("left");
-    directions.set("upperLeft");
-    directions.set("up");
-    directions.set("upperRight");
-    directions.set("right");
-    directions.set("lowerRight");
-    directions.set("low");
-    directions.set("lowerleft");
-
-    if (field % 10 === 1) {
-      directions.delete("left");
-      directions.delete("upperLeft");
-      directions.delete("lowerLeft");
-    }
-
-    if (field >= 1 && field <= 10) {
-      directions.delete("up");
-      directions.delete("upperLeft");
-      directions.delete("upperRight");
-    }
-
-    if (field % 10 === 0) {
-      directions.delete("right");
-      directions.delete("upperRight");
-      directions.delete("lowerRight");
-    }
-
-    if (field >= 91 && field <= 100) {
-      directions.delete("low");
-      directions.delete("lowerLeft");
-      directions.delete("lowerRight");
-    }
-
-    let canditates = Array.from(directions.keys())
-        .map(dir => ops[dir](field))
-        .filter(val => !visitedFields.includes(val));
-
-    return canditates[randomInt(0, canditates.length - 1)];
-  }
-
   segments() {
     let hint = randomInt(2, 99);
     let currentField = hint;
@@ -152,7 +101,7 @@ class MagicCube extends HTMLElement {
     let rows = [];
 
     for (let i = 0; i < fields; i++) {
-      let nextField = this.nextField(currentField, visitedFields);
+      let [ nextField, _direction ] = this.nextField(currentField, visitedFields);
       visitedFields.push(nextField);
       currentField = nextField;
     }
@@ -165,6 +114,102 @@ class MagicCube extends HTMLElement {
 
         cols.push(this.colTemplate(value, value === hint, !visitedFields.includes(value)));
       }
+
+      rows.push(this.rowTemplate(cols));
+    }
+
+    rows.forEach((row) => {
+      this.form.appendChild(row);
+    });
+  }
+
+  nextField(field, visitedFields, simple) {
+    const ops = {
+      left: (x) => { return x - 1 },
+      upperLeft: (x) => { return x - 11 },
+      up: (x) => { return x - 10 },
+      upperRight: (x) => { return x - 9 },
+      right: (x) => { return x + 1 },
+      downRight: (x) => { return x + 11 },
+      down: (x) => { return x + 10 },
+      downLeft: (x) => { return x + 9 }
+    };
+
+    let directions = new Map();
+
+    directions.set("left");
+    directions.set("up");
+    directions.set("right");
+    directions.set("down");
+
+    if (!simple) {
+      directions.set("upperLeft"); 
+      directions.set("upperRight");
+      directions.set("downRight");
+      directions.set("downLeft");
+    }
+
+    if (field % 10 === 1) {
+      directions.delete("left");
+      directions.delete("upperLeft");
+      directions.delete("downLeft");
+    }
+
+    if (field >= 1 && field <= 10) {
+      directions.delete("up");
+      directions.delete("upperLeft");
+      directions.delete("upperRight");
+    }
+
+    if (field % 10 === 0) {
+      directions.delete("right");
+      directions.delete("upperRight");
+      directions.delete("downRight");
+    }
+
+    if (field >= 91 && field <= 100) {
+      directions.delete("down");
+      directions.delete("downLeft");
+      directions.delete("downRight");
+    }
+
+    let canditates = Array.from(directions.keys())
+        .map(dir => [ ops[dir](field), dir ])
+        .filter(valAndDir => !visitedFields.includes(valAndDir[0]));
+
+    return canditates[randomInt(0, canditates.length - 1)] || [false, false];
+  }
+
+  pathFinder() {
+    this.maxScore = 10;
+
+    let rows = [];
+
+    for (let row in rangeOfTen) {
+      let cols = [];
+      let hint = randomInt(2, 99);
+      let currentField = hint;
+      let visitedFields = [hint];
+
+      cols.push(this.colTemplate(hint, true));
+
+      for (let i = 0; i < 8; i++) {
+        let [ nextField, direction ] = this.nextField(currentField, visitedFields, true);
+
+        if (!nextField) {
+          break;
+        }
+
+        visitedFields.push(nextField);
+        currentField = nextField;
+
+        let arrow = document.createElement("span");
+        arrow.innerHTML = `&${direction}arrow;`;
+
+        cols.push(this.colTemplate(arrow.innerHTML, true));
+      }
+
+      cols.push(this.colTemplate(currentField));
 
       rows.push(this.rowTemplate(cols));
     }
@@ -201,7 +246,7 @@ class MagicCube extends HTMLElement {
     let input = document.createElement("input", { is: "magic-cube-input" });
     input.classList.add("form-control", "form-control-lg");
     input.setAttribute("type", "text");
-    input.setAttribute("data-result", result);
+    input.setAttribute("data-expected-result", result);
     input.setAttribute("is", "magic-cube-input");
 
     if (disable) {
@@ -226,6 +271,7 @@ class MagicCube extends HTMLElement {
 class MagicCubeInput extends HTMLInputElement {
   connectedCallback() {
     this.addEventListener("blur", this.checkInput);
+    this.expectedResult = parseInt(this.getAttribute("data-expected-result"));
   }
 
   checkInput(event) {
@@ -234,7 +280,7 @@ class MagicCubeInput extends HTMLInputElement {
       return false;
     }
 
-    if (parseInt(this.value) === this.result) {
+    if (parseInt(this.value) === this.expectedResult) {
       this.classList.add("is-valid");
       this.classList.remove("is-invalid");
       this.setAttribute("disabled", true);
@@ -249,10 +295,6 @@ class MagicCubeInput extends HTMLInputElement {
 
   get eventRoot() {
     return this.closest("magic-cube");
-  }
-
-  get result() {
-    return parseInt(this.getAttribute("data-result"));
   }
 }
 
