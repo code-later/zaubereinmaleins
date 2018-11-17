@@ -1,7 +1,8 @@
 module.exports = {
   js: [{
     source: "./src/js/app.js",
-    target: "./public/app.js"
+    target: "./public/app.js",
+    esnext: true
   }],
   sass: [{
     source: "./src/scss/app.scss",
