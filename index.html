@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Zaubereinmaleins</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="jumbotron">
+      <h1 class="display-4">ZAUBERmini - Hunderterfeld 2.0</h1>
+
+
+      <p class="lead">
+        Eine interaktive Version der <a href="https://www2.zaubereinmaleins.de/2010/zauberminis/zaubermini_hunderter.pdf">ZAUBERmini - Hunderterfeld</a> von Susanne Schäfer. Das Original und andere tolle Materialien finden sich auf ihrer Seite <a href="https://www.zaubereinmaleins.de">zaubereinmaleins.de</a>.
+      </p>
+
+      <hr class="my-4">
+
+      <p>
+        Wähle einen Spielmodus um zu starten:
+      </p>
+
+      <a class="btn btn-primary btn-lg" href="#vervollstaendigen" role="button">Tafel vervollständigen</a>
+      <a class="btn btn-primary btn-lg" href="#vorgaenger-und-nachfolger" role="button">Vorgänger und Nachfolger</a>
+      <a class="btn btn-primary btn-lg" href="#ausschnitte" role="button">Ausschnitte vervollständigen</a>
+      <a class="btn btn-primary btn-lg" href="#wo-kommst-du-an" role="button">Wo kommst du an?</a>
+    </div>
+
+    <magic-cube>
+    </magic-cube>
+  </div>
+
+  <canvas class="confetti" id="confettiCannon"></canvas>
+
+  <modal-dialog class="modal" id="congratulationsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Super gemacht!</h2>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Probier doch auch noch eine der anderen Spielmodi aus.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
+        </div>
+      </div>
+    </div>
+  </modal-dialog>
+
+  <script src="/app.js"></script>
+</body>
+
+</html>
