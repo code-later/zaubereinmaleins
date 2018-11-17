@@ -2,10 +2,8 @@
 
 const rangeOfTen = [...Array(10).keys()].map(x => parseInt(x));
 
-class ZauberMini extends HTMLElement {
+class MagicCube extends HTMLElement {
   connectedCallback() {
-    this.cube = [];
-
     let form = document.createElement("form");
 
     form.innerHTML = this.buildCubeInputs();
@@ -18,13 +16,10 @@ class ZauberMini extends HTMLElement {
     for (let row of rangeOfTen) {
       let cols = [];
 
-      this.cube.push([]);
-
       for (let col of rangeOfTen) {
         let value = (row * 10) + col + 1;
 
-        this.cube[this.cube.length - 1].push(value);
-        cols.push(this.colTemplate(row, col));
+        cols.push(this.colTemplate(value));
       }
 
       rows.push(this.rowTemplate(cols));
@@ -41,13 +36,41 @@ class ZauberMini extends HTMLElement {
     `;
   }
 
-  colTemplate(x, y) {
+  colTemplate(result) {
     return `
       <div class="col">
-        <input type="text" class="form-control form-control-lg" id="cell_${x}_${y}">
+        <input type="text" class="form-control form-control-lg" data-result="${result}" is="magic-cube-input">
       </div>
     `;
   }
 }
 
-window.customElements.define("zauber-mini", ZauberMini);
+class MagicCubeInput extends HTMLInputElement {
+  connectedCallback() {
+    this.addEventListener("blur", this.checkInput);
+  }
+
+  checkInput(event) {
+    if (this.value === "") {
+      this.classList.remove("is-invalid");
+      return false;
+    }
+
+    if (parseInt(this.value) === this.result) {
+      this.classList.add("is-valid");
+      this.classList.remove("is-invalid");
+      this.setAttribute("disabled", true);
+    } else {
+      this.classList.add("is-invalid");
+    }
+
+    return true;
+  }
+
+  get result() {
+    return parseInt(this.getAttribute("data-result"));
+  }
+}
+
+window.customElements.define("magic-cube", MagicCube);
+window.customElements.define("magic-cube-input", MagicCubeInput, { extends: "input" });
