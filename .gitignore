@@ -5,6 +5,9 @@
 public/app.css
 public/app.js
 
+# gh-pages deploy
+gh-pages-deploy/
+
 # Logs
 logs
 *.log
