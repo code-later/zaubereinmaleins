@@ -1,6 +1,10 @@
 # Editor files
 .vscode/
 
+# Ignored generated files
+public/app.css
+public/app.js
+
 # Logs
 logs
 *.log
