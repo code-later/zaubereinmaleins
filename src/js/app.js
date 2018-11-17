@@ -35,6 +35,9 @@ class MagicCube extends HTMLElement {
     case "vorgaenger-und-nachfolger" :
       this.predecessorAndSuccessor();
       break;
+    case "ausschnitte" :
+      this.segments();
+      break;
     default:
       console.log("No game mode selected yet.");
     }
@@ -84,6 +87,93 @@ class MagicCube extends HTMLElement {
     });
   }
 
+  nextField(field, visitedFields) {
+    const ops = {
+      left: (x) => { return x - 1 },
+      upperLeft: (x) => { return x - 11 },
+      up: (x) => { return x - 10 },
+      upperRight: (x) => { return x - 9 },
+      right: (x) => { return x + 1 },
+      lowerRight: (x) => { return x + 11 },
+      low: (x) => { return x + 10 },
+      lowerleft: (x) => { return x + 9 }
+    };
+
+    let directions = new Map();
+
+    directions.set("left");
+    directions.set("upperLeft");
+    directions.set("up");
+    directions.set("upperRight");
+    directions.set("right");
+    directions.set("lowerRight");
+    directions.set("low");
+    directions.set("lowerleft");
+
+    if (field % 10 === 1) {
+      directions.delete("left");
+      directions.delete("upperLeft");
+      directions.delete("lowerLeft");
+    }
+
+    if (field >= 1 && field <= 10) {
+      directions.delete("up");
+      directions.delete("upperLeft");
+      directions.delete("upperRight");
+    }
+
+    if (field % 10 === 0) {
+      directions.delete("right");
+      directions.delete("upperRight");
+      directions.delete("lowerRight");
+    }
+
+    if (field >= 91 && field <= 100) {
+      directions.delete("low");
+      directions.delete("lowerLeft");
+      directions.delete("lowerRight");
+    }
+
+    let canditates = Array.from(directions.keys())
+        .map(dir => ops[dir](field))
+        .filter(val => !visitedFields.includes(val));
+
+    return canditates[randomInt(0, canditates.length - 1)];
+  }
+
+  segments() {
+    let hint = randomInt(2, 99);
+    let currentField = hint;
+    let fields = randomInt(5, 12);
+    let visitedFields = [hint];
+
+    this.maxScore = fields;
+
+    let rows = [];
+
+    for (let i = 0; i < fields; i++) {
+      let nextField = this.nextField(currentField, visitedFields);
+      visitedFields.push(nextField);
+      currentField = nextField;
+    }
+
+    for (let row in rangeOfTen) {
+      let cols = [];
+
+      for (let col of rangeOfTen) {
+        let value = (row * 10) + col + 1;
+
+        cols.push(this.colTemplate(value, value === hint, !visitedFields.includes(value)));
+      }
+
+      rows.push(this.rowTemplate(cols));
+    }
+
+    rows.forEach((row) => {
+      this.form.appendChild(row);
+    });
+  }
+
   countScore(event) {
     this.score++;
 
@@ -104,7 +194,7 @@ class MagicCube extends HTMLElement {
     return row;
   }
 
-  colTemplate(result, disable) {
+  colTemplate(result, disable, hidden) {
     let col = document.createElement("div");
     col.classList.add("col");
 
@@ -117,6 +207,10 @@ class MagicCube extends HTMLElement {
     if (disable) {
       input.setAttribute("disabled", true);
       input.setAttribute("value", result);
+    }
+
+    if (hidden) {
+      input.classList.add("is-hidden");
     }
 
     col.appendChild(input);

@@ -8,6 +8,10 @@ input[is="magic-cube-input"] {
   &.is-invalid, &.is-valid {
     border-width: 4px;
   }
+
+  &.is-hidden {
+    display: none;
+  }
 }
 
 .confetti {
