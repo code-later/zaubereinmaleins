@@ -5,9 +5,18 @@ import { dispatchEvent } from "uitil/dom/events";
 const rangeOfTen = [...Array(10).keys()].map(x => parseInt(x));
 const confettiCannon = new ConfettiGenerator({ target: "confettiCannon", clock: 50 });
 
+const randomInt = (from, to) => {
+  let min = Math.ceil(from);
+  let max = Math.floor(to);
+
+  return Math.floor(Math.random() * (from - to + 1)) + to;
+};
+
 class MagicCube extends HTMLElement {
   connectedCallback() {
     this.score = 0;
+    this.form = document.createElement("form");
+    this.appendChild(this.form);
 
     window.addEventListener("popstate", this.chooseGameMode.bind(this));
     this.addEventListener("cubeComplete", confettiCannon.render);
@@ -17,18 +26,23 @@ class MagicCube extends HTMLElement {
   }
 
   chooseGameMode() {
+    this.form.innerHTML = "";
+
     switch(this.gameMode) {
     case "vervollstaendigen" :
-      this.maxScore = 100;
-      this.buildCubeInputs();
+      this.completeTheCube();
+      break;
+    case "vorgaenger-und-nachfolger" :
+      this.predecessorAndSuccessor();
       break;
     default:
       console.log("No game mode selected yet.");
     }
   }
 
-  buildCubeInputs() {
-    let form = document.createElement("form");
+  completeTheCube() {
+    this.maxScore = 100;
+
     let rows = [];
 
     for (let row of rangeOfTen) {
@@ -43,8 +57,31 @@ class MagicCube extends HTMLElement {
       rows.push(this.rowTemplate(cols));
     }
 
-    form.innerHTML = rows.join("");
-    this.appendChild(form);
+    rows.forEach((row) => {
+      this.form.appendChild(row);
+    });
+  }
+
+  predecessorAndSuccessor() {
+    let rounds = 10;
+    let rows = [];
+
+    this.maxScore = rounds * 2;
+
+    for (let i = 0; i < rounds; i++) {
+      let cols = [];
+      let hint = randomInt(2, 99);
+
+      for (let value of [hint-1, hint, hint+1]) {
+        cols.push(this.colTemplate(value, hint === value));
+      }
+
+      rows.push(this.rowTemplate(cols));
+    }
+
+    rows.forEach((row) => {
+      this.form.appendChild(row);
+    });
   }
 
   countScore(event) {
@@ -57,19 +94,34 @@ class MagicCube extends HTMLElement {
   }
 
   rowTemplate(cols) {
-    return `
-      <div class="form-row mb-1">
-        ${cols.join("")}
-      </div>
-    `;
+    let row = document.createElement("div");
+    row.classList.add("form-row", "mb-1");
+
+    cols.forEach((col) => {
+      row.appendChild(col);
+    });
+
+    return row;
   }
 
-  colTemplate(result) {
-    return `
-      <div class="col">
-        <input type="text" class="form-control form-control-lg" data-result="${result}" is="magic-cube-input">
-      </div>
-    `;
+  colTemplate(result, disable) {
+    let col = document.createElement("div");
+    col.classList.add("col");
+
+    let input = document.createElement("input", { is: "magic-cube-input" });
+    input.classList.add("form-control", "form-control-lg");
+    input.setAttribute("type", "text");
+    input.setAttribute("data-result", result);
+    input.setAttribute("is", "magic-cube-input");
+
+    if (disable) {
+      input.setAttribute("disabled", true);
+      input.setAttribute("value", result);
+    }
+
+    col.appendChild(input);
+
+    return col;
   }
 
   get gameMode() {
