@@ -1,7 +1,4 @@
-(function () {
-'use strict';
-
-if(typeof global === "undefined" && typeof window !== "undefined") {
+(function(){'use strict';if(typeof global === "undefined" && typeof window !== "undefined") {
 	window.global = window;
 }
 
@@ -198,37 +195,20 @@ function _nonIterableSpread() {
 
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
-}
-
-window.ConfettiGenerator = function (params) {
-  //////////////
-  // Defaults
+}window.ConfettiGenerator = function (params) {
   var appstate = {
     target: 'confetti-holder',
-    // Id of the canvas
     max: 80,
-    // Max itens to render
     size: 1,
-    // prop size
     animate: true,
-    // Should aniamte?
     props: ['circle', 'square', 'triangle', 'line'],
-    // Types of confetti
     colors: [[165, 104, 246], [230, 61, 135], [0, 199, 228], [253, 214, 126]],
-    // Colors to render confetti
     clock: 25,
-    // Speed of confetti fall
     interval: null,
-    // Draw interval holder
     rotate: false,
-    // Whenever to rotate a prop
     width: window.innerWidth,
-    // canvas width (as int, in px)
-    height: window.innerHeight // canvas height (as int, in px)
-
-  }; //////////////
-  // Setting parameters if received
-
+    height: window.innerHeight
+  };
   if (params) {
     if (params.target) appstate.target = params.target;
     if (params.max) appstate.max = params.max;
@@ -240,70 +220,48 @@ window.ConfettiGenerator = function (params) {
     if (params.width) appstate.width = params.width;
     if (params.height) appstate.height = params.height;
     if (params.rotate !== undefined && params.rotate !== null) appstate.rotate = params.rotate;
-  } //////////////
-  // Properties
-
-
+  }
   var cv = document.getElementById(appstate.target);
   var ctx = cv.getContext("2d");
-  var particles = []; //////////////
-  // Random helper (to minimize typing)
-
+  var particles = [];
   function rand(limit, floor) {
     if (!limit) limit = 1;
     var rand = Math.random() * limit;
     return !floor ? rand : Math.floor(rand);
   }
-
   var totalWeight = appstate.props.reduce(function (weight, prop) {
     return weight + (prop.weight || 1);
   }, 0);
-
   function selectProp() {
     var rand = Math.random() * totalWeight;
-
     for (var i = 0; i < appstate.props.length; ++i) {
       var weight = appstate.props[i].weight || 1;
       if (rand < weight) return i;
       rand -= weight;
     }
-  } //////////////
-  // Confetti particle generator
-
-
+  }
   function particleFactory() {
     var prop = appstate.props[selectProp()];
     var p = {
       prop: prop.type ? prop.type : prop,
-      //prop type
       x: rand(appstate.width),
-      //x-coordinate
       y: rand(appstate.height),
-      //y-coordinate
       src: prop.src,
       radius: rand(4) + 1,
-      //radius
       size: prop.size,
       rotate: appstate.rotate,
       line: Math.floor(rand(65) - 30),
-      // line angle
       angles: [rand(10, true) + 2, rand(10, true) + 2, rand(10, true) + 2, rand(10, true) + 2],
-      // triangle drawing angles
       color: appstate.colors[rand(appstate.colors.length, true)],
-      // color
       rotation: rand(360, true) * Math.PI / 180,
       speed: rand(appstate.clock / 7) + appstate.clock / 30
     };
     return p;
-  } //////////////
-  // Confetti drawing on canvas
-
-
+  }
   function particleDraw(p) {
     var op = p.radius <= 3 ? 0.4 : 0.8;
     ctx.fillStyle = ctx.strokeStyle = "rgba(" + p.color + ", " + op + ")";
     ctx.beginPath();
-
     switch (p.prop) {
       case 'circle':
         {
@@ -312,7 +270,6 @@ window.ConfettiGenerator = function (params) {
           ctx.fill();
           break;
         }
-
       case 'triangle':
         {
           ctx.moveTo(p.x, p.y);
@@ -322,7 +279,6 @@ window.ConfettiGenerator = function (params) {
           ctx.fill();
           break;
         }
-
       case 'line':
         {
           ctx.moveTo(p.x, p.y);
@@ -331,7 +287,6 @@ window.ConfettiGenerator = function (params) {
           ctx.stroke();
           break;
         }
-
       case 'square':
         {
           ctx.save();
@@ -341,7 +296,6 @@ window.ConfettiGenerator = function (params) {
           ctx.restore();
           break;
         }
-
       case 'svg':
         {
           ctx.save();
@@ -355,13 +309,7 @@ window.ConfettiGenerator = function (params) {
           break;
         }
     }
-  } //////////////
-  // Public itens
-  //////////////
-  //////////////
-  // Clean actual state
-
-
+  }
   var _clear = function _clear() {
     appstate.animate = false;
     clearInterval(appstate.interval);
@@ -371,38 +319,27 @@ window.ConfettiGenerator = function (params) {
       cv.width = 1;
       cv.width = w;
     });
-  }; //////////////
-  // Render confetti on canvas
-
-
+  };
   var _render = function _render() {
-    //canvas dimensions
     cv.width = appstate.width;
     cv.height = appstate.height;
     particles = [];
-
     for (var i = 0; i < appstate.max; i++) {
       particles.push(particleFactory());
     }
-
     function draw() {
       ctx.clearRect(0, 0, appstate.width, appstate.height);
-
       for (var i in particles) {
         particleDraw(particles[i]);
       }
-
-      update(); //animation loop
-
+      update();
       if (appstate.animate) requestAnimationFrame(draw);
     }
-
     function update() {
       for (var i = 0; i < appstate.max; i++) {
         var p = particles[i];
         if (appstate.animate) p.y += p.speed;
         if (p.rotate) p.rotation += p.speed / 35;
-
         if (p.speed >= 0 && p.y > appstate.height || p.speed < 0 && p.y < 0) {
           particles[i] = p;
           particles[i].x = rand(appstate.width, true);
@@ -410,89 +347,122 @@ window.ConfettiGenerator = function (params) {
         }
       }
     }
-
     return requestAnimationFrame(draw);
   };
-
   return {
     render: _render,
     clear: _clear
   };
-};
-
-/* eslint-env browser */
-// generates custom events
-// `emitter` is a DOM node
-// `options` is passed through to `CustomEvent` (cf.
-// https://developer.mozilla.org/en-US/docs/Web/API/Event/Event#Values)
-function dispatchEvent(emitter, name, payload) {
+};var ConfettiCannon =
+function (_HTMLElement) {
+  _inherits(ConfettiCannon, _HTMLElement);
+  function ConfettiCannon() {
+    _classCallCheck(this, ConfettiCannon);
+    return _possibleConstructorReturn(this, _getPrototypeOf(ConfettiCannon).apply(this, arguments));
+  }
+  _createClass(ConfettiCannon, [{
+    key: "connectedCallback",
+    value: function connectedCallback() {
+      var canvas = this.querySelector("canvas");
+      this.generator = new ConfettiGenerator({
+        target: canvas.getAttribute("id"),
+        clock: 50
+      });
+      document.addEventListener("fireCannon", this.fireCannon.bind(this));
+      document.addEventListener("holdFire", this.holdFire.bind(this));
+    }
+  }, {
+    key: "fireCannon",
+    value: function fireCannon() {
+      this.generator.render();
+    }
+  }, {
+    key: "holdFire",
+    value: function holdFire() {
+      this.generator.clear();
+    }
+  }]);
+  return ConfettiCannon;
+}(_wrapNativeSuper(HTMLElement));
+window.customElements.define("confetti-cannon", ConfettiCannon);function dispatchEvent(emitter, name, payload) {
   var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
   if (payload) {
     options.detail = payload;
   }
-
   var ev = new CustomEvent(name, options);
   emitter.dispatchEvent(ev);
-} // generate a native DOM event (e.g. simulating a click interaction)
-
-var rangeOfTen = _toConsumableArray(Array(10).keys()).map(function (x) {
+}var rangeOfTen = _toConsumableArray(Array(10).keys()).map(function (x) {
   return parseInt(x);
 });
-
-var confettiCannon = new ConfettiGenerator({
-  target: "confettiCannon",
-  clock: 50
-});
-
 var randomInt = function randomInt(from, to) {
   return Math.floor(Math.random() * (from - to + 1)) + to;
 };
-
+var fieldOps = {
+  left: function left(x) {
+    return x - 1;
+  },
+  upperLeft: function upperLeft(x) {
+    return x - 11;
+  },
+  up: function up(x) {
+    return x - 10;
+  },
+  upperRight: function upperRight(x) {
+    return x - 9;
+  },
+  right: function right(x) {
+    return x + 1;
+  },
+  downRight: function downRight(x) {
+    return x + 11;
+  },
+  down: function down(x) {
+    return x + 10;
+  },
+  downLeft: function downLeft(x) {
+    return x + 9;
+  }
+};
 var MagicCube =
-/*#__PURE__*/
 function (_HTMLElement) {
   _inherits(MagicCube, _HTMLElement);
-
   function MagicCube() {
     _classCallCheck(this, MagicCube);
-
     return _possibleConstructorReturn(this, _getPrototypeOf(MagicCube).apply(this, arguments));
   }
-
   _createClass(MagicCube, [{
     key: "connectedCallback",
     value: function connectedCallback() {
-      this.score = 0;
       this.form = document.createElement("form");
       this.appendChild(this.form);
       window.addEventListener("popstate", this.chooseGameMode.bind(this));
-      this.addEventListener("cubeComplete", confettiCannon.render);
-      this.addEventListener("cubeCorrectResult", this.countScore.bind(this));
+      document.addEventListener("cubeRestart", this.chooseGameMode.bind(this));
+      document.addEventListener("cubeCorrectResult", this.countScore.bind(this));
       this.chooseGameMode();
+    }
+  }, {
+    key: "cubeCompleted",
+    value: function cubeCompleted() {
+      dispatchEvent(document, "fireCannon");
     }
   }, {
     key: "chooseGameMode",
     value: function chooseGameMode() {
+      this.score = 0;
       this.form.innerHTML = "";
-
       switch (this.gameMode) {
         case "vervollstaendigen":
           this.completeTheCube();
           break;
-
         case "vorgaenger-und-nachfolger":
           this.predecessorAndSuccessor();
           break;
-
         case "ausschnitte":
           this.segments();
           break;
-
         case "wo-kommst-du-an":
           this.pathFinder();
           break;
-
         default:
           console.log("No game mode selected yet.");
       }
@@ -501,13 +471,11 @@ function (_HTMLElement) {
     key: "completeTheCube",
     value: function completeTheCube() {
       var _this = this;
-
       this.maxScore = 100;
       var rows = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
-
       try {
         for (var _iterator = rangeOfTen[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var row = _step.value;
@@ -515,7 +483,6 @@ function (_HTMLElement) {
           var _iteratorNormalCompletion2 = true;
           var _didIteratorError2 = false;
           var _iteratorError2 = undefined;
-
           try {
             for (var _iterator2 = rangeOfTen[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var col = _step2.value;
@@ -536,7 +503,6 @@ function (_HTMLElement) {
               }
             }
           }
-
           rows.push(this.rowTemplate(cols));
         }
       } catch (err) {
@@ -553,7 +519,6 @@ function (_HTMLElement) {
           }
         }
       }
-
       rows.forEach(function (row) {
         _this.form.appendChild(row);
       });
@@ -562,24 +527,19 @@ function (_HTMLElement) {
     key: "predecessorAndSuccessor",
     value: function predecessorAndSuccessor() {
       var _this2 = this;
-
       var rounds = 10;
       var rows = [];
       this.maxScore = rounds * 2;
-
       for (var i = 0; i < rounds; i++) {
         var cols = [];
         var hint = randomInt(2, 99);
         var _arr = [hint - 1, hint, hint + 1];
-
         for (var _i = 0; _i < _arr.length; _i++) {
           var value = _arr[_i];
           cols.push(this.colTemplate(value, hint === value));
         }
-
         rows.push(this.rowTemplate(cols));
       }
-
       rows.forEach(function (row) {
         _this2.form.appendChild(row);
       });
@@ -588,30 +548,25 @@ function (_HTMLElement) {
     key: "segments",
     value: function segments() {
       var _this3 = this;
-
       var hint = randomInt(2, 99);
       var currentField = hint;
       var fields = randomInt(5, 12);
       var visitedFields = [hint];
       this.maxScore = fields;
       var rows = [];
-
       for (var i = 0; i < fields; i++) {
         var _this$nextField = this.nextField(currentField, visitedFields),
             _this$nextField2 = _slicedToArray(_this$nextField, 2),
             nextField = _this$nextField2[0],
             _direction = _this$nextField2[1];
-
         visitedFields.push(nextField);
         currentField = nextField;
       }
-
       for (var row in rangeOfTen) {
         var cols = [];
         var _iteratorNormalCompletion3 = true;
         var _didIteratorError3 = false;
         var _iteratorError3 = undefined;
-
         try {
           for (var _iterator3 = rangeOfTen[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
             var col = _step3.value;
@@ -632,135 +587,92 @@ function (_HTMLElement) {
             }
           }
         }
-
         rows.push(this.rowTemplate(cols));
       }
-
       rows.forEach(function (row) {
         _this3.form.appendChild(row);
       });
     }
   }, {
-    key: "nextField",
-    value: function nextField(field, visitedFields, simple) {
-      var ops = {
-        left: function left(x) {
-          return x - 1;
-        },
-        upperLeft: function upperLeft(x) {
-          return x - 11;
-        },
-        up: function up(x) {
-          return x - 10;
-        },
-        upperRight: function upperRight(x) {
-          return x - 9;
-        },
-        right: function right(x) {
-          return x + 1;
-        },
-        downRight: function downRight(x) {
-          return x + 11;
-        },
-        down: function down(x) {
-          return x + 10;
-        },
-        downLeft: function downLeft(x) {
-          return x + 9;
-        }
-      };
-      var directions = new Map();
-      directions.set("left");
-      directions.set("up");
-      directions.set("right");
-      directions.set("down");
-
-      if (!simple) {
-        directions.set("upperLeft");
-        directions.set("upperRight");
-        directions.set("downRight");
-        directions.set("downLeft");
-      }
-
-      if (field % 10 === 1) {
-        directions.delete("left");
-        directions.delete("upperLeft");
-        directions.delete("downLeft");
-      }
-
-      if (field >= 1 && field <= 10) {
-        directions.delete("up");
-        directions.delete("upperLeft");
-        directions.delete("upperRight");
-      }
-
-      if (field % 10 === 0) {
-        directions.delete("right");
-        directions.delete("upperRight");
-        directions.delete("downRight");
-      }
-
-      if (field >= 91 && field <= 100) {
-        directions.delete("down");
-        directions.delete("downLeft");
-        directions.delete("downRight");
-      }
-
-      var canditates = Array.from(directions.keys()).map(function (dir) {
-        return [ops[dir](field), dir];
-      }).filter(function (valAndDir) {
-        return !visitedFields.includes(valAndDir[0]);
-      });
-      return canditates[randomInt(0, canditates.length - 1)] || [false, false];
-    }
-  }, {
     key: "pathFinder",
     value: function pathFinder() {
       var _this4 = this;
-
       this.maxScore = 10;
       var rows = [];
-
       for (var row in rangeOfTen) {
         var cols = [];
         var hint = randomInt(2, 99);
         var currentField = hint;
         var visitedFields = [hint];
         cols.push(this.colTemplate(hint, true));
-
         for (var i = 0; i < 8; i++) {
           var _this$nextField3 = this.nextField(currentField, visitedFields, true),
               _this$nextField4 = _slicedToArray(_this$nextField3, 2),
               nextField = _this$nextField4[0],
               direction = _this$nextField4[1];
-
           if (!nextField) {
             break;
           }
-
           visitedFields.push(nextField);
           currentField = nextField;
           var arrow = document.createElement("span");
           arrow.innerHTML = "&".concat(direction, "arrow;");
           cols.push(this.colTemplate(arrow.innerHTML, true));
         }
-
         cols.push(this.colTemplate(currentField));
         rows.push(this.rowTemplate(cols));
       }
-
       rows.forEach(function (row) {
         _this4.form.appendChild(row);
       });
     }
   }, {
+    key: "nextField",
+    value: function nextField(field, visitedFields, simple) {
+      var directions = new Map();
+      directions.set("left");
+      directions.set("up");
+      directions.set("right");
+      directions.set("down");
+      if (!simple) {
+        directions.set("upperLeft");
+        directions.set("upperRight");
+        directions.set("downRight");
+        directions.set("downLeft");
+      }
+      if (field % 10 === 1) {
+        directions.delete("left");
+        directions.delete("upperLeft");
+        directions.delete("downLeft");
+      }
+      if (field >= 1 && field <= 10) {
+        directions.delete("up");
+        directions.delete("upperLeft");
+        directions.delete("upperRight");
+      }
+      if (field % 10 === 0) {
+        directions.delete("right");
+        directions.delete("upperRight");
+        directions.delete("downRight");
+      }
+      if (field >= 91 && field <= 100) {
+        directions.delete("down");
+        directions.delete("downLeft");
+        directions.delete("downRight");
+      }
+      var canditates = Array.from(directions.keys()).map(function (dir) {
+        return [fieldOps[dir](field), dir];
+      }).filter(function (valAndDir) {
+        return !visitedFields.includes(valAndDir[0]);
+      });
+      return canditates[randomInt(0, canditates.length - 1)] || [false, false];
+    }
+  }, {
     key: "countScore",
     value: function countScore(event) {
       this.score++;
-
-      if (this.score === this.maxScore) {
-        dispatchEvent(this, "cubeComplete", this.result);
-        document.getElementById("congratulationsModal").classList.add("is-visible");
+      if (this.score >= this.maxScore) {
+        this.cubeCompleted();
       }
     }
   }, {
@@ -785,16 +697,13 @@ function (_HTMLElement) {
       input.setAttribute("type", "text");
       input.setAttribute("data-expected-result", result);
       input.setAttribute("is", "magic-cube-input");
-
       if (disable) {
         input.setAttribute("disabled", true);
         input.setAttribute("value", result);
       }
-
       if (hidden) {
         input.classList.add("is-hidden");
       }
-
       col.appendChild(input);
       return col;
     }
@@ -804,25 +713,19 @@ function (_HTMLElement) {
       return document.location.hash.substr(1);
     }
   }]);
-
   return MagicCube;
 }(_wrapNativeSuper(HTMLElement));
-
 var MagicCubeInput =
-/*#__PURE__*/
 function (_HTMLInputElement) {
   _inherits(MagicCubeInput, _HTMLInputElement);
-
   function MagicCubeInput() {
     _classCallCheck(this, MagicCubeInput);
-
     return _possibleConstructorReturn(this, _getPrototypeOf(MagicCubeInput).apply(this, arguments));
   }
-
   _createClass(MagicCubeInput, [{
     key: "connectedCallback",
     value: function connectedCallback() {
-      this.addEventListener("blur", this.checkInput);
+      this.addEventListener("blur", this.checkInput.bind(this));
       this.expectedResult = parseInt(this.getAttribute("data-expected-result"));
     }
   }, {
@@ -832,61 +735,57 @@ function (_HTMLInputElement) {
         this.classList.remove("is-invalid");
         return false;
       }
-
       if (parseInt(this.value) === this.expectedResult) {
         this.classList.add("is-valid");
         this.classList.remove("is-invalid");
         this.setAttribute("disabled", true);
-        dispatchEvent(this.eventRoot, "cubeCorrectResult", this.result);
+        dispatchEvent(document, "cubeCorrectResult", this.result);
       } else {
         this.classList.add("is-invalid");
       }
-
       return true;
     }
-  }, {
-    key: "eventRoot",
-    get: function get() {
-      return this.closest("magic-cube");
-    }
   }]);
-
   return MagicCubeInput;
 }(_wrapNativeSuper(HTMLInputElement));
-
-var ModalDialog =
-/*#__PURE__*/
-function (_HTMLElement2) {
-  _inherits(ModalDialog, _HTMLElement2);
-
-  function ModalDialog() {
-    _classCallCheck(this, ModalDialog);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(ModalDialog).apply(this, arguments));
-  }
-
-  _createClass(ModalDialog, [{
-    key: "connectedCallback",
-    value: function connectedCallback() {
-      var _this5 = this;
-
-      this.querySelectorAll("button[data-dismiss]").forEach(function (button) {
-        button.addEventListener("click", function () {
-          _this5.classList.remove("is-visible");
-
-          confettiCannon.clear();
-        });
-      });
-    }
-  }]);
-
-  return ModalDialog;
-}(_wrapNativeSuper(HTMLElement));
-
 window.customElements.define("magic-cube", MagicCube);
 window.customElements.define("magic-cube-input", MagicCubeInput, {
   extends: "input"
-});
-window.customElements.define("modal-dialog", ModalDialog);
-
-}());
+});var ModalDialog =
+function (_HTMLElement) {
+  _inherits(ModalDialog, _HTMLElement);
+  function ModalDialog() {
+    _classCallCheck(this, ModalDialog);
+    return _possibleConstructorReturn(this, _getPrototypeOf(ModalDialog).apply(this, arguments));
+  }
+  _createClass(ModalDialog, [{
+    key: "connectedCallback",
+    value: function connectedCallback() {
+      var closeButton = this.querySelector("button[data-dismiss]");
+      var newRoundButton = this.querySelector(".btn-primary");
+      document.addEventListener("fireCannon", this.show.bind(this));
+      closeButton.addEventListener("click", this.close.bind(this));
+      newRoundButton.addEventListener("click", this.newRound.bind(this));
+    }
+  }, {
+    key: "show",
+    value: function show() {
+      this.classList.add("is-visible");
+    }
+  }, {
+    key: "close",
+    value: function close() {
+      this.classList.remove("is-visible");
+      dispatchEvent(document, "holdFire");
+    }
+  }, {
+    key: "newRound",
+    value: function newRound() {
+      this.classList.remove("is-visible");
+      dispatchEvent(document, "holdFire");
+      dispatchEvent(document, "cubeRestart");
+    }
+  }]);
+  return ModalDialog;
+}(_wrapNativeSuper(HTMLElement));
+window.customElements.define("modal-dialog", ModalDialog);}());

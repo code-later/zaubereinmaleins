@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Zaubereinmaleins</title>
-  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/app-1259853dfbc8492b4b088242996cf39c.css">
 </head>
 
 <body>
@@ -36,7 +36,9 @@
     </magic-cube>
   </div>
 
-  <canvas class="confetti" id="confettiCannon"></canvas>
+  <confetti-cannon>
+    <canvas class="confetti-cannon" id="confetti-cannon"></canvas>
+  </confetti-cannon>
 
   <modal-dialog class="modal" id="congratulationsModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -51,13 +53,14 @@
           Probier doch auch noch eine der anderen Spielmodi aus.
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-primary">Noch eine Runde</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
         </div>
       </div>
     </div>
   </modal-dialog>
 
-  <script src="/app.js"></script>
+  <script src="/app-f7245d5180437f437b94fcf4807db488.js"></script>
 </body>
 
 </html>
