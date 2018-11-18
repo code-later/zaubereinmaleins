@@ -36,7 +36,9 @@
     </magic-cube>
   </div>
 
-  <canvas class="confetti" id="confettiCannon"></canvas>
+  <confetti-cannon>
+    <canvas class="confetti-cannon" id="confetti-cannon"></canvas>
+  </confetti-cannon>
 
   <modal-dialog class="modal" id="congratulationsModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -51,6 +53,7 @@
           Probier doch auch noch eine der anderen Spielmodi aus.
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-primary">Noch eine Runde</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
         </div>
       </div>
